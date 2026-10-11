@@ -1,0 +1,6 @@
+# EdgeTX compiled Lua files
+*.luac
+
+# OS-specific
+.DS_Store
+Thumbs.db
