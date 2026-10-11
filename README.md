@@ -42,11 +42,11 @@ Diese Version ergänzt zwei wichtige Funktionen, die im Original fehlen: **Model
 
 **Modellname eingeben**
 
-![Modellname](docs/screenshots/01-modellname.png)
+![Modellname](01-modellname.png)
 
 **Modellbild auswählen**
 
-![Bildauswahl](docs/screenshots/02-bildauswahl.png)
+![Bildauswahl](02-bildauswahl.png)
 
 ### Installation
 
@@ -115,11 +115,11 @@ This version adds two important features that are missing in the original: **mod
 
 **Enter model name**
 
-![Model name](docs/screenshots/01-modellname.png)
+![Model name](01-modellname.png)
 
 **Select model image**
 
-![Image selection](docs/screenshots/02-bildauswahl.png)
+![Image selection](02-bildauswahl.png)
 
 ### Installation
 
