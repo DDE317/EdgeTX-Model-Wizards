@@ -8,7 +8,7 @@ Erweiterte Modell-Assistenten für EdgeTX 2.12+ – mit Modellname, Modellbild u
 
 ### ⬇️ Download
 
-[📦 Deutsche Version herunterladen](downloads/EdgeTX-Wizard-DE-v1.0.zip)
+[📦 Deutsche Version herunterladen](https://github.com/DDE317/EdgeTX-Model-Wizards/raw/main/downloads/EdgeTX-Wizard-DE-v1.0.zip)
 
 ### Was ist das?
 
@@ -78,7 +78,7 @@ Wolfgang Dirks ([DDE317](https://github.com/DDE317))
 
 ### ⬇️ Download
 
-[📦 Download English version](downloads/EdgeTX-Wizard-EN-v1.0.zip)
+[📦 Download English version](https://github.com/DDE317/EdgeTX-Model-Wizards/raw/main/downloads/EdgeTX-Wizard-EN-v1.0.zip)
 
 ### What is this?
 
