@@ -1,0 +1,2 @@
+Creates a basic delta or flying wing model.
+Model name, model image, motor, safety switch, elevons, expo, dual rate, and mixers are set up automatically.

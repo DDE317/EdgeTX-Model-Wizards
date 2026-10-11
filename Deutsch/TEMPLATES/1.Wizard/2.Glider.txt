@@ -1,0 +1,2 @@
+Erstellt ein einfaches Segler-Grundmodell mit optionalem Motor.
+Modellname, Modellbild, Motor, Sicherheitsschalter, Querruder, Klappen, Heck, Fahrwerk, Expo, Dual Rate und Mischer werden automatisch eingerichtet.

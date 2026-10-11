@@ -1,0 +1,2 @@
+Creates a basic glider model with an optional motor.
+Model name, model image, motor, safety switch, ailerons, flaps, tail, landing gear, expo, dual rate, and mixers are set up automatically.

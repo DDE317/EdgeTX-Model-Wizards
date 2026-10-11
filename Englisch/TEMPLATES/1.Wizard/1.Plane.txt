@@ -1,0 +1,2 @@
+Creates a basic aircraft model.
+The model name, model image, motor, safety switch, ailerons, flaps, tail, landing gear, expo, dual rates, and mixers are set up automatically.

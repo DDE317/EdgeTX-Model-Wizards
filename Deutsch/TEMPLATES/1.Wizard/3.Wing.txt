@@ -1,0 +1,2 @@
+Erstellt ein einfaches Delta- / Nurflügel-Grundmodell.
+Modellname, Modellbild, Motor, Sicherheitsschalter, Elevons, Expo, Dual Rate und Mischer werden automatisch eingerichtet.

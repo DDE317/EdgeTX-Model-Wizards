@@ -1,0 +1,3 @@
+Erstellt ein einfaches Helikopter-Grundmodell.
+
+Alle grundlegenden Einstellungen werden automatisch eingerichtet.
