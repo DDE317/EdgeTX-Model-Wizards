@@ -1,10 +1,5 @@
 # EdgeTX Model Wizards (DE / EN)
 
-### ⬇️ Download
-
-| 🇩🇪 Deutsch | 🇬🇧 English |
-|---|---|
-| [📦 Deutsche Version herunterladen](https://github.com/DDE317/EdgeTX-Model-Wizards/raw/main/downloads/EdgeTX-Wizard-DE-v1.0.zip) | [📦 Download English version](https://github.com/DDE317/EdgeTX-Model-Wizards/raw/main/downloads/EdgeTX-Wizard-EN-v1.0.zip) |
 
 Erweiterte Modell-Assistenten für EdgeTX 2.12+ – mit Modellname, Modellbild und deutschen Texten.
 
