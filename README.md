@@ -6,6 +6,10 @@ Erweiterte Modell-Assistenten für EdgeTX 2.12+ – mit Modellname, Modellbild u
 
 ## 🇩🇪 Deutsch
 
+### ⬇️ Download
+
+[📦 Deutsche Version herunterladen](downloads/EdgeTX-Wizard-DE-v1.0.zip)
+
 ### Was ist das?
 
 Dies ist eine **erweiterte Version** der offiziellen EdgeTX Modell-Assistenten für EdgeTX 2.12+.
@@ -30,13 +34,6 @@ Diese Version ergänzt zwei wichtige Funktionen, die im Original fehlen: **Model
 | `3.Wing.lua` | Delta / Nurflügler |
 | `4.Helicopter.lua` | Helikopter |
 | `5.Multirotor.lua` | Multirotor / Drohne |
-
-### Sprachen
-
-| Sprache | Ordner |
-|---|---|
-| Deutsch | `Deutsch/` |
-| Englisch | `Englisch/` |
 
 ### Screenshots
 
@@ -78,6 +75,10 @@ Wolfgang Dirks ([DDE317](https://github.com/DDE317))
 ---
 
 ## 🇬🇧 English
+
+### ⬇️ Download
+
+[📦 Download English version](downloads/EdgeTX-Wizard-EN-v1.0.zip)
 
 ### What is this?
 
