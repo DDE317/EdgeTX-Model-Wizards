@@ -19,6 +19,7 @@
 -- Update by: Offer Shmuely (2023)
 -- Update by: Alexander Gnauck (2025)
 -- Update by: Wolfgang Dirks (2026) - Model name + model image + English texts
+-- Update: optimized model name input (no page rebuild on keypress)
 
 local RUN_DIR = "/TEMPLATES/1.Wizard/lib"
 local IMG_DIR = "/TEMPLATES/1.Wizard/img"
@@ -85,59 +86,83 @@ local function getKeyboardLayout()
 end
 
 -- =========================================================================
--- Model Name page
+-- Model Name page (optimized: no page rebuild on keypress)
 -- =========================================================================
+local modelNameLabel = nil
+
+local function buildKeyboardRow(rowKeys, onKey)
+	local rowChildren = {}
+	for _, key in ipairs(rowKeys) do
+		rowChildren[#rowChildren + 1] = {
+			type = "button",
+			text = key,
+			w = 26,
+			h = 28,
+			press = function()
+				onKey(key)
+			end,
+		}
+	end
+	return {
+		type = "rectangle",
+		flexFlow = lvgl.FLOW_ROW,
+		flexPad = 3,
+		children = rowChildren,
+	}
+end
+
+local function refreshModelNameLabel()
+	if modelNameLabel ~= nil then
+		local display = ModelNameValue
+		if display == "" then
+			display = "(empty)"
+		end
+		modelNameLabel:set({ text = display })
+	end
+end
+
 local function runModelNamePage()
 	lvgl.clear()
 
 	local layout = getKeyboardLayout()
 
-	local row1Buttons = {}
-	for _, key in ipairs(layout[1]) do
-		row1Buttons[#row1Buttons + 1] = {
-			type = "button",
-			text = key,
-			w = 26,
-			h = 28,
-			press = function()
-				if #ModelNameValue < 20 then
-					ModelNameValue = ModelNameValue .. key
-				end
-				runModelNamePage()
-			end,
-		}
+	local function onKey(key)
+		if #ModelNameValue < 20 then
+			ModelNameValue = ModelNameValue .. key
+			refreshModelNameLabel()
+		end
 	end
 
-	local row2Buttons = {}
-	for _, key in ipairs(layout[2]) do
-		row2Buttons[#row2Buttons + 1] = {
-			type = "button",
-			text = key,
-			w = 26,
-			h = 28,
-			press = function()
-				if #ModelNameValue < 20 then
-					ModelNameValue = ModelNameValue .. key
-				end
-				runModelNamePage()
-			end,
-		}
+	local function onSpace()
+		if #ModelNameValue < 20 then
+			ModelNameValue = ModelNameValue .. " "
+			refreshModelNameLabel()
+		end
 	end
 
-	local row3Buttons = {}
-	for _, key in ipairs(layout[3]) do
-		row3Buttons[#row3Buttons + 1] = {
-			type = "button",
-			text = key,
-			w = 26,
-			h = 28,
-			press = function()
-				if #ModelNameValue < 20 then
-					ModelNameValue = ModelNameValue .. key
-				end
-				runModelNamePage()
-			end,
-		}
+	local function onDelete()
+		ModelNameValue = string.sub(ModelNameValue, 1, -2)
+		refreshModelNameLabel()
+	end
+
+	local function onModeToggle()
+		if NamePageKeyboardMode == 2 then
+			NamePageKeyboardMode = 1
+		else
+			NamePageKeyboardMode = 2
+		end
+		modelNameLabel = nil
+		runModelNamePage()
+	end
+
+	local function onModeNumbers()
+		if NamePageKeyboardMode == 3 then
+			NamePageKeyboardMode = 1
+		else
+			NamePageKeyboardMode = 3
+		end
+		modelNameLabel = nil
+		runModelNamePage()
 	end
 
 	local controlRow = {
@@ -145,71 +170,17 @@ local function runModelNamePage()
 		flexFlow = lvgl.FLOW_ROW,
 		flexPad = 3,
 		children = {
-			{
-				type = "button",
-				text = "a/A",
-				w = 40,
-				h = 28,
-				press = function()
-					if NamePageKeyboardMode == 2 then
-						NamePageKeyboardMode = 1
-					else
-						NamePageKeyboardMode = 2
-					end
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "123",
-				w = 40,
-				h = 28,
-				press = function()
-					if NamePageKeyboardMode == 3 then
-						NamePageKeyboardMode = 1
-					else
-						NamePageKeyboardMode = 3
-					end
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "SPACE",
-				w = 90,
-				h = 28,
-				press = function()
-					if #ModelNameValue < 20 then
-						ModelNameValue = ModelNameValue .. " "
-					end
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "DEL",
-				w = 50,
-				h = 28,
-				press = function()
-					ModelNameValue = string.sub(ModelNameValue, 1, -2)
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "OK",
-				w = 50,
-				h = 28,
-				press = function()
-					selectPage(1)
-				end,
-			},
+			{ type = "button", text = "a/A", w = 40, h = 28, press = onModeToggle },
+			{ type = "button", text = "123", w = 40, h = 28, press = onModeNumbers },
+			{ type = "button", text = "SPACE", w = 90, h = 28, press = onSpace },
+			{ type = "button", text = "DEL", w = 50, h = 28, press = onDelete },
+			{ type = "button", text = "OK", w = 50, h = 28, press = function() selectPage(1) end },
 		},
 	}
 
-	local nameDisplay = ModelNameValue
-	if nameDisplay == "" then
-		nameDisplay = "(empty)"
+	local display = ModelNameValue
+	if display == "" then
+		display = "(empty)"
 	end
 
 	local children1 = {
@@ -218,7 +189,8 @@ local function runModelNamePage()
 			children = {
 				{
 					type = "label",
-					text = nameDisplay,
+					text = display,
+					name = "modelNameLabel",
 				},
 			},
 		}),
@@ -228,24 +200,9 @@ local function runModelNamePage()
 			h = 12,
 			thickness = 0,
 		},
-		{
-			type = "rectangle",
-			flexFlow = lvgl.FLOW_ROW,
-			flexPad = 3,
-			children = row1Buttons,
-		},
-		{
-			type = "rectangle",
-			flexFlow = lvgl.FLOW_ROW,
-			flexPad = 3,
-			children = row2Buttons,
-		},
-		{
-			type = "rectangle",
-			flexFlow = lvgl.FLOW_ROW,
-			flexPad = 3,
-			children = row3Buttons,
-		},
+		buildKeyboardRow(layout[1], onKey),
+		buildKeyboardRow(layout[2], onKey),
+		buildKeyboardRow(layout[3], onKey),
 		controlRow,
 	}
 
@@ -255,7 +212,7 @@ local function runModelNamePage()
 		}),
 	}
 
-	local page = wizard.page({
+	local pageDef = wizard.page({
 		title = WIZARD_TITLE,
 		subtitle = "Model Name (max 20 chars)",
 		hasPrevious = false,
@@ -267,7 +224,10 @@ local function runModelNamePage()
 		children2 = children2,
 	})
 
-	lvgl.build(page)
+	local built = lvgl.build(pageDef)
+	if built ~= nil then
+		modelNameLabel = built["modelNameLabel"]
+	end
 end
 
 -- =========================================================================
@@ -817,7 +777,6 @@ end
 -- createModel
 -- =========================================================================
 local function createModel()
-	-- NEW: Set model name + image
 	local info = {}
 	if ModelNameValue ~= nil and ModelNameValue ~= "" then
 		info.name = ModelNameValue
@@ -859,24 +818,16 @@ local function runConfigSummary()
 		end
 	end
 
-	-- NEW: Show model name
 	if ModelNameValue ~= nil and ModelNameValue ~= "" then
 		addRows(wizard.summaryLine("Model Name", nil, ModelNameValue))
 	end
 
-	-- throttle
 	addRows(wizard.summaryLine("Throttle channel", ThrottleFields.value))
-	-- roll
 	addRows(wizard.summaryLine("Roll channel", RollFields.value))
-	-- pitch
 	addRows(wizard.summaryLine("Pitch channel", PitchFields.value))
-	-- yaw
 	addRows(wizard.summaryLine("Yaw channel", YawFields.value))
-	-- arm
 	addRows(wizard.summaryLine("Arm switch", nil, ArmFields.avail_values[ArmFields.value + 1]))
-	-- beeper
 	addRows(wizard.summaryLine("Beeper switch", nil, BeeperFields.avail_values[BeeperFields.value + 1]))
-	-- mode
 	addRows(wizard.summaryLine("Mode switch", nil, ModeFields.avail_values[ModeFields.value + 1]))
 
 	lvgl.clear()
