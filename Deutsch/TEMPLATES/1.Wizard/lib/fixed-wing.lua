@@ -18,7 +18,8 @@
 -- Author: 3djc (2017)
 -- Update by: Offer Shmuely (2023)
 -- Update by: Alexander Gnauck (2025)
--- Update by: Wolfgang Dirks (2026) - Modellname + Modellbild in LVGL, deutsche Texte
+-- Update by: Wolfgang Dirks (2026) - Model name + model image in LVGL
+-- Update: optimized model name input (no page rebuild on keypress)
 
 local wizardType = ...
 
@@ -26,8 +27,8 @@ local RUN_DIR = "/TEMPLATES/1.Wizard/lib"
 local IMG_DIR = "/TEMPLATES/1.Wizard/img"
 local MODEL_IMG_DIR = "/IMAGES"
 
-local RUDDER_NAME_AIL = (wizardType ~= "wing") and "Querruder" or "Elevons"
-local WIZARD_TITLE = "Flugzeug-Assistent"
+local RUDDER_NAME_AIL = (wizardType ~= "wing") and "Aileron" or "Elevron"
+local WIZARD_TITLE = string.gsub(string.lower(wizardType), "^%l", string.upper) .. " Wizard"
 
 local modelConfig = loadScript(RUN_DIR .. "/model-config.lua")()
 local wizard = loadScript(RUN_DIR .. "/wizard-ui.lua")()
@@ -92,59 +93,84 @@ local function getKeyboardLayout()
 end
 
 -- =========================================================================
--- Modellname-Seite
+-- Modellname-Seite (optimiert: kein Seiten-Neuaufbau bei Tastendruck)
 -- =========================================================================
+local modelNameLabel = nil
+
+local function buildKeyboardRow(rowKeys, onKey)
+	local rowChildren = {}
+	for _, key in ipairs(rowKeys) do
+		rowChildren[#rowChildren + 1] = {
+			type = "button",
+			text = key,
+			w = 26,
+			h = 28,
+			press = function()
+				onKey(key)
+			end,
+		}
+	end
+	return {
+		type = "rectangle",
+		flexFlow = lvgl.FLOW_ROW,
+		flexPad = 3,
+		children = rowChildren,
+	}
+end
+
+local function refreshModelNameLabel()
+	if modelNameLabel ~= nil then
+		local display = ModelNameValue
+		if display == "" then
+			display = "(empty)"
+		end
+		modelNameLabel:set({ text = display })
+	end
+end
+
 local function runModelNamePage()
 	lvgl.clear()
 
 	local layout = getKeyboardLayout()
 
-	local row1Buttons = {}
-	for _, key in ipairs(layout[1]) do
-		row1Buttons[#row1Buttons + 1] = {
-			type = "button",
-			text = key,
-			w = 26,
-			h = 28,
-			press = function()
-				if #ModelNameValue < 20 then
-					ModelNameValue = ModelNameValue .. key
-				end
-				runModelNamePage()
-			end,
-		}
+	-- Tasten-Funktion
+	local function onKey(key)
+		if #ModelNameValue < 20 then
+			ModelNameValue = ModelNameValue .. key
+			refreshModelNameLabel()
+		end
 	end
 
-	local row2Buttons = {}
-	for _, key in ipairs(layout[2]) do
-		row2Buttons[#row2Buttons + 1] = {
-			type = "button",
-			text = key,
-			w = 26,
-			h = 28,
-			press = function()
-				if #ModelNameValue < 20 then
-					ModelNameValue = ModelNameValue .. key
-				end
-				runModelNamePage()
-			end,
-		}
+	local function onSpace()
+		if #ModelNameValue < 20 then
+			ModelNameValue = ModelNameValue .. " "
+			refreshModelNameLabel()
+		end
 	end
 
-	local row3Buttons = {}
-	for _, key in ipairs(layout[3]) do
-		row3Buttons[#row3Buttons + 1] = {
-			type = "button",
-			text = key,
-			w = 26,
-			h = 28,
-			press = function()
-				if #ModelNameValue < 20 then
-					ModelNameValue = ModelNameValue .. key
-				end
-				runModelNamePage()
-			end,
-		}
+	local function onDelete()
+		ModelNameValue = string.sub(ModelNameValue, 1, -2)
+		refreshModelNameLabel()
+	end
+
+	local function onModeToggle()
+		if NamePageKeyboardMode == 2 then
+			NamePageKeyboardMode = 1
+		else
+			NamePageKeyboardMode = 2
+		end
+		modelNameLabel = nil  -- Beim Modus-Wechsel neu aufbauen
+		runModelNamePage()
+	end
+
+	local function onModeNumbers()
+		if NamePageKeyboardMode == 3 then
+			NamePageKeyboardMode = 1
+		else
+			NamePageKeyboardMode = 3
+		end
+		modelNameLabel = nil
+		runModelNamePage()
 	end
 
 	local controlRow = {
@@ -152,80 +178,27 @@ local function runModelNamePage()
 		flexFlow = lvgl.FLOW_ROW,
 		flexPad = 3,
 		children = {
-			{
-				type = "button",
-				text = "a/A",
-				w = 40,
-				h = 28,
-				press = function()
-					if NamePageKeyboardMode == 2 then
-						NamePageKeyboardMode = 1
-					else
-						NamePageKeyboardMode = 2
-					end
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "123",
-				w = 40,
-				h = 28,
-				press = function()
-					if NamePageKeyboardMode == 3 then
-						NamePageKeyboardMode = 1
-					else
-						NamePageKeyboardMode = 3
-					end
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "LEER",
-				w = 90,
-				h = 28,
-				press = function()
-					if #ModelNameValue < 20 then
-						ModelNameValue = ModelNameValue .. " "
-					end
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "LÖSCH",
-				w = 50,
-				h = 28,
-				press = function()
-					ModelNameValue = string.sub(ModelNameValue, 1, -2)
-					runModelNamePage()
-				end,
-			},
-			{
-				type = "button",
-				text = "OK",
-				w = 50,
-				h = 28,
-				press = function()
-					selectPage(1)
-				end,
-			},
+			{ type = "button", text = "a/A", w = 40, h = 28, press = onModeToggle },
+			{ type = "button", text = "123", w = 40, h = 28, press = onModeNumbers },
+			{ type = "button", text = "SPACE", w = 90, h = 28, press = onSpace },
+			{ type = "button", text = "DEL", w = 50, h = 28, press = onDelete },
+			{ type = "button", text = "OK", w = 50, h = 28, press = function() selectPage(1) end },
 		},
 	}
 
-	local nameDisplay = ModelNameValue
-	if nameDisplay == "" then
-		nameDisplay = "(leer)"
+	local display = ModelNameValue
+	if display == "" then
+		display = "(empty)"
 	end
 
 	local children1 = {
 		wizard.settings({
-			title = "Modellname",
+			title = "Model Name",
 			children = {
 				{
 					type = "label",
-					text = nameDisplay,
+					text = display,
+					name = "modelNameLabel",
 				},
 			},
 		}),
@@ -235,24 +208,9 @@ local function runModelNamePage()
 			h = 12,
 			thickness = 0,
 		},
-		{
-			type = "rectangle",
-			flexFlow = lvgl.FLOW_ROW,
-			flexPad = 3,
-			children = row1Buttons,
-		},
-		{
-			type = "rectangle",
-			flexFlow = lvgl.FLOW_ROW,
-			flexPad = 3,
-			children = row2Buttons,
-		},
-		{
-			type = "rectangle",
-			flexFlow = lvgl.FLOW_ROW,
-			flexPad = 3,
-			children = row3Buttons,
-		},
+		buildKeyboardRow(layout[1], onKey),
+		buildKeyboardRow(layout[2], onKey),
+		buildKeyboardRow(layout[3], onKey),
 		controlRow,
 	}
 
@@ -262,9 +220,9 @@ local function runModelNamePage()
 		}),
 	}
 
-	local page = wizard.page({
+	local pageDef = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Modellname (max 20 Zeichen)",
+		subtitle = "Model Name (max 20 chars)",
 		hasPrevious = false,
 		hasNext = true,
 		nextFunc = function()
@@ -274,7 +232,11 @@ local function runModelNamePage()
 		children2 = children2,
 	})
 
-	lvgl.build(page)
+	-- lvgl.build gibt die benannten Elemente zurück
+	local built = lvgl.build(pageDef)
+	if built ~= nil then
+		modelNameLabel = built["modelNameLabel"]
+	end
 end
 
 -- =========================================================================
@@ -357,7 +319,7 @@ local function runModelImagePage()
 		flexFlow = lvgl.FLOW_ROW,
 		flexPad = 3,
 		children = {
-			{ type = "button", text = "Alle", w = 50, h = 28, press = function() ImageFilter = "all"; rebuildFilteredList(); runModelImagePage() end },
+			{ type = "button", text = "All", w = 50, h = 28, press = function() ImageFilter = "all"; rebuildFilteredList(); runModelImagePage() end },
 			{ type = "button", text = "a-c", w = 45, h = 28, press = function() ImageFilter = "a-c"; rebuildFilteredList(); runModelImagePage() end },
 			{ type = "button", text = "d-f", w = 45, h = 28, press = function() ImageFilter = "d-f"; rebuildFilteredList(); runModelImagePage() end },
 			{ type = "button", text = "g-i", w = 45, h = 28, press = function() ImageFilter = "g-i"; rebuildFilteredList(); runModelImagePage() end },
@@ -386,9 +348,9 @@ local function runModelImagePage()
 	}
 
 	local currentName = getCurrentImageName()
-	local infoText = "Keine Bilder"
+	local infoText = "No images"
 	if currentName ~= nil then
-		infoText = "Bild " .. ImageFilterIndex .. " / " .. #ImageFilteredList
+		infoText = "Image " .. ImageFilterIndex .. " / " .. #ImageFilteredList
 	end
 
 	local infoRow = wizard.settings({
@@ -461,7 +423,7 @@ local function runModelImagePage()
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Modellbild auswählen",
+		subtitle = "Model Image",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function()
@@ -481,13 +443,13 @@ end
 -- Motor
 -- =========================================================================
 local MotorFields = {
-	is_motor = { id = "is_motor", value = 1, avail_values = { "Nein", "Ja" } },
+	is_motor = { id = "is_motor", value = 1, avail_values = { "No", "Yes" } },
 	motor_ch = {
 		id = "motor_ch",
 		value = defaultChannel_0_THR,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
-	is_arm = { id = "is_arm", value = 1, avail_values = { "Nein", "Ja" } },
+	is_arm = { id = "is_arm", value = 1, avail_values = { "No", "Yes" } },
 	arm_switch = {
 		id = "arm_switch",
 		value = 5,
@@ -500,7 +462,7 @@ local function runMotorConfig()
 
 	local children1 = {
 		wizard.settings({
-			title = "Motor vorhanden?",
+			title = "Have a motor?",
 			children = {
 				{
 					type = "toggle",
@@ -510,7 +472,7 @@ local function runMotorConfig()
 			},
 		}),
 		wizard.settings({
-			title = "Motor-Kanal",
+			title = "Motor channel",
 			children = {
 				{
 					type = "choice",
@@ -522,7 +484,7 @@ local function runMotorConfig()
 			visible = function() return MotorFields.is_motor.value end,
 		}),
 		wizard.settings({
-			title = "Sicherheitsschalter",
+			title = "Safety Switch",
 			children = {
 				{
 					type = "toggle",
@@ -547,7 +509,7 @@ local function runMotorConfig()
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Motor Einstellungen",
+		subtitle = "Motor Settings",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function() selectPage(1) end,
@@ -563,16 +525,16 @@ end
 -- Querruder
 -- =========================================================================
 local AilFields = {
-	ail_type = { id = "ail_type", value = 2, avail_values = { "Keine", "Eine", "Zwei" } },
+	ail_type = { id = "ail_type", value = 2, avail_values = { "None", "One", "Two" } },
 	ail_ch_a = {
 		id = "ail_ch_a",
 		value = defaultChannel_0_AIL,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 	ail_ch_b = {
 		id = "ail_ch_b",
 		value = defaultChannel_0_AIL + 1,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 }
 
@@ -581,7 +543,7 @@ local function runAilConfig()
 
 	local children1 = {
 		wizard.settings({
-			title = "Anzahl " .. RUDDER_NAME_AIL,
+			title = "Number of " .. RUDDER_NAME_AIL,
 			children = {
 				{
 					type = "choice",
@@ -593,7 +555,7 @@ local function runAilConfig()
 			visible = function() return (wizardType ~= "wing") end,
 		}),
 		wizard.settings({
-			title = "A (rechts)",
+			title = "A (right)",
 			children = {
 				{
 					type = "choice",
@@ -605,7 +567,7 @@ local function runAilConfig()
 			visible = function() return AilFields.ail_type.value > 0 end,
 		}),
 		wizard.settings({
-			title = "B (links)",
+			title = "B (left)",
 			children = {
 				{
 					type = "choice",
@@ -635,7 +597,7 @@ local function runAilConfig()
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = RUDDER_NAME_AIL .. " Einstellungen",
+		subtitle = RUDDER_NAME_AIL .. " Settings",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function() selectPage(1) end,
@@ -651,16 +613,16 @@ end
 -- Klappen
 -- =========================================================================
 local FlapsFields = {
-	flap_type = { id = "flap_type", value = 0, avail_values = { "Nein", "Ja (eine)", "Ja (zwei)" } },
+	flap_type = { id = "flap_type", value = 0, avail_values = { "No", "Yes (one)", "Yes (two)" } },
 	flap_ch_a = {
 		id = "flap_ch_a",
 		value = 8 - 1,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 	flap_ch_b = {
 		id = "flap_ch_b",
 		value = 9 - 1,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 }
 
@@ -669,7 +631,7 @@ local function runFlapsConfig()
 
 	local children1 = {
 		wizard.settings({
-			title = "Klappen vorhanden?",
+			title = "Do you have flaps",
 			children = {
 				{
 					type = "choice",
@@ -680,7 +642,7 @@ local function runFlapsConfig()
 			},
 		}),
 		wizard.settings({
-			title = "A (rechts)",
+			title = "A (right)",
 			children = {
 				{
 					type = "choice",
@@ -692,7 +654,7 @@ local function runFlapsConfig()
 			visible = function() return FlapsFields.flap_type.value > 0 end,
 		}),
 		wizard.settings({
-			title = "B (links)",
+			title = "B (left)",
 			children = {
 				{
 					type = "choice",
@@ -722,7 +684,7 @@ local function runFlapsConfig()
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Klappen Einstellungen",
+		subtitle = "Flaps Settings",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function() selectPage(1) end,
@@ -742,26 +704,26 @@ local TailFields = {
 		id = "tail_type",
 		value = 1,
 		avail_values = {
-			"1 Kanal Höhe, kein Seite",
-			"1 Kanal Höhe, 1 Kanal Seite",
-			"2 Kanal Höhe, 1 Kanal Seite",
-			"V-Leitwerk",
+			"1 CH for Elevator, no Rudder",
+			"1 CH for Elevator, 1 for Rudder",
+			"2 CH for Elevator, 1 for Rudder",
+			"V Tail",
 		},
 	},
 	ch_a = {
 		id = "ch_a",
 		value = defaultChannel_0_ELE,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 	ch_b = {
 		id = "ch_b",
 		value = defaultChannel_0_RUD,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 	ch_c = {
 		id = "ch_c",
 		value = 6 - 1,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 }
 
@@ -770,7 +732,7 @@ local function runTailConfig()
 
 	local children1 = {
 		wizard.settingsVertical({
-			title = "Heckkonfiguration wählen",
+			title = "Select your tail configuration",
 			children = {
 				{
 					type = "choice",
@@ -781,7 +743,7 @@ local function runTailConfig()
 			},
 		}),
 		wizard.settings({
-			title = "Kanal für A",
+			title = "Channel for A",
 			children = {
 				{
 					type = "choice",
@@ -792,7 +754,7 @@ local function runTailConfig()
 			},
 		}),
 		wizard.settings({
-			title = "Kanal für B",
+			title = "Channel for B",
 			children = {
 				{
 					type = "choice",
@@ -804,7 +766,7 @@ local function runTailConfig()
 			visible = function() return TailFields.tail_type.value > 0 end,
 		}),
 		wizard.settings({
-			title = "Kanal für C",
+			title = "Channel for C",
 			children = {
 				{
 					type = "choice",
@@ -838,7 +800,7 @@ local function runTailConfig()
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Heck Einstellungen",
+		subtitle = "Tail Settings",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function() selectPage(1) end,
@@ -854,12 +816,12 @@ end
 -- Fahrwerk
 -- =========================================================================
 local GearFields = {
-	is_gear = { id = "is_gear", value = 0, avail_values = { "Nein", "Ja" } },
+	is_gear = { id = "is_gear", value = 0, avail_values = { "No", "Yes" } },
 	switch = { id = "switch", value = 3, avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
 	channel = {
 		id = "channel",
 		value = 7 - 1,
-		avail_values = { "K1", "K2", "K3", "K4", "K5", "K6", "K7", "K8", "K9", "K10" },
+		avail_values = { "CH1", "CH2", "CH3", "CH4", "CH5", "CH6", "CH7", "CH8", "CH9", "CH10" },
 	},
 }
 
@@ -868,7 +830,7 @@ local function runGearConfig()
 
 	local children1 = {
 		wizard.settings({
-			title = "Einziehfahrwerk vorhanden?",
+			title = "Does your model have retract landing gears?",
 			children = {
 				{
 					type = "choice",
@@ -879,7 +841,7 @@ local function runGearConfig()
 			},
 		}),
 		wizard.settings({
-			title = "Fahrwerk-Schalter",
+			title = "Retracts switch",
 			children = {
 				{
 					type = "choice",
@@ -891,7 +853,7 @@ local function runGearConfig()
 			visible = function() return GearFields.is_gear.value > 0 end,
 		}),
 		wizard.settings({
-			title = "Fahrwerk-Kanal",
+			title = "Retracts channel",
 			children = {
 				{
 					type = "choice",
@@ -910,7 +872,7 @@ local function runGearConfig()
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Fahrwerk",
+		subtitle = "Landing Gear",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function() selectPage(1) end,
@@ -927,7 +889,7 @@ end
 -- =========================================================================
 local AdditionalSettingsFields = {
 	expo = { id = "expo", value = 30, min = 0, max = 100 },
-	is_dual_rate = { id = "is_dual_rate", value = 1, avail_values = { "Nein", "Ja" } },
+	is_dual_rate = { id = "is_dual_rate", value = 1, avail_values = { "No", "Yes" } },
 	dr_switch = { id = "dr_switch", value = 2, avail_values = { "SA", "SB", "SC", "SD", "SE", "SF", "SG", "SH" } },
 }
 
@@ -969,7 +931,7 @@ local function runAdditionalSettings()
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Zusätzliche Einstellungen",
+		subtitle = "Additional Settings",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function() selectPage(1) end,
@@ -1031,49 +993,49 @@ local function createModel()
 
 	if wizardType ~= "wing" then
 		if AilFields.ail_type.value == 1 then
-			modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Quer")
+			modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Ail")
 		elseif AilFields.ail_type.value == 2 then
-			modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Quer-R")
-			modelConfig.addMix(AilFields.ail_ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Quer-L", -100)
+			modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Ail-R")
+			modelConfig.addMix(AilFields.ail_ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel_0_AIL, "Ail-L", -100)
 		end
 	else
-		modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "Höh-R", 50)
-		modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "Quer-R", -50)
-		modelConfig.addMix(AilFields.ail_ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "Höh-L", 50)
-		modelConfig.addMix(AilFields.ail_ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "Quer-L", 50)
+		modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-R", 50)
+		modelConfig.addMix(AilFields.ail_ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-R", -50)
+		modelConfig.addMix(AilFields.ail_ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_ELE), "ele-L", 50)
+		modelConfig.addMix(AilFields.ail_ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(STICK_NUMBER_AIL), "ail-L", 50)
 	end
 
 	if wizardType ~= "wing" then
 		if FlapsFields.flap_type.value == 1 then
-			modelConfig.addMix(FlapsFields.flap_ch_a.value, MIXSRC_SA, "Klappen")
+			modelConfig.addMix(FlapsFields.flap_ch_a.value, MIXSRC_SA, "Flaps")
 		elseif FlapsFields.flap_type.value == 2 then
-			modelConfig.addMix(FlapsFields.flap_ch_a.value, MIXSRC_SA, "KlappenR")
-			modelConfig.addMix(FlapsFields.flap_ch_b.value, MIXSRC_SA, "KlappenL")
+			modelConfig.addMix(FlapsFields.flap_ch_a.value, MIXSRC_SA, "FlapsR")
+			modelConfig.addMix(FlapsFields.flap_ch_b.value, MIXSRC_SA, "FlapsL")
 		end
 	end
 
 	if wizardType ~= "wing" then
 		if TailFields.tail_type.value == 0 then
-			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Höhe")
+			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Elev")
 		elseif TailFields.tail_type.value == 1 then
-			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Höhe")
-			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "Seite")
+			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Elev")
+			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "Rudder")
 		elseif TailFields.tail_type.value == 2 then
-			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Höh-R")
-			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "Seite")
-			modelConfig.addMix(TailFields.ch_c.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Höh-L")
+			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Elev-R")
+			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "Rudder")
+			modelConfig.addMix(TailFields.ch_c.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "Elev-L")
 		elseif TailFields.tail_type.value == 3 then
-			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "V-HöhR", 50)
-			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "V-SeitR", 50, 1)
-			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "V-HöhL", 50)
-			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "V-SeitL", -50, 1)
+			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "V-EleR", 50)
+			modelConfig.addMix(TailFields.ch_a.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "V-RudR", 50, 1)
+			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(1), "V-EleL", 50)
+			modelConfig.addMix(TailFields.ch_b.value, MIXSRC_FIRST_INPUT + defaultChannel(0), "V-RudL", -50, 1)
 		end
 	end
 
 	if wizardType ~= "wing" then
 		if GearFields.is_gear.value == 1 then
 			local switchIndex = MIXSRC_SA + GearFields.switch.value
-			modelConfig.addMix(GearFields.channel.value, switchIndex, "Fahrw", 100, 0)
+			modelConfig.addMix(GearFields.channel.value, switchIndex, "Gear", 100, 0)
 		end
 	end
 
@@ -1106,49 +1068,49 @@ local function runConfigSummary()
 	end
 
 	if ModelNameValue ~= nil and ModelNameValue ~= "" then
-		addRows(wizard.summaryLine("Modellname", nil, ModelNameValue))
+		addRows(wizard.summaryLine("Model Name", nil, ModelNameValue))
 	end
 
 	if MotorFields.is_motor.value == 1 then
-		addRows(wizard.summaryLine("Motor-Kanal", MotorFields.motor_ch.value))
+		addRows(wizard.summaryLine("Motor Channel", MotorFields.motor_ch.value))
 	end
 
 	if AilFields.ail_type.value == 1 then
-		addRows(wizard.summaryLine(RUDDER_NAME_AIL .. " Kanal", AilFields.ail_ch_a.value))
+		addRows(wizard.summaryLine(RUDDER_NAME_AIL .. " channel", AilFields.ail_ch_a.value))
 	elseif AilFields.ail_type.value == 2 then
 		addRows(
-			wizard.summaryLine(RUDDER_NAME_AIL .. " Rechts", AilFields.ail_ch_a.value),
-			wizard.summaryLine(RUDDER_NAME_AIL .. " Links", AilFields.ail_ch_b.value)
+			wizard.summaryLine(RUDDER_NAME_AIL .. " Right channel", AilFields.ail_ch_a.value),
+			wizard.summaryLine(RUDDER_NAME_AIL .. " Left channel", AilFields.ail_ch_b.value)
 		)
 	end
 
 	if FlapsFields.flap_type.value == 1 then
-		addRows(wizard.summaryLine("Klappen Kanal", FlapsFields.flap_ch_a.value))
+		addRows(wizard.summaryLine("Flaps channel", FlapsFields.flap_ch_a.value))
 	elseif FlapsFields.flap_type.value == 2 then
 		addRows(
-			wizard.summaryLine("Klappen Rechts", FlapsFields.flap_ch_a.value),
-			wizard.summaryLine("Klappen Links", FlapsFields.flap_ch_b.value)
+			wizard.summaryLine("Flaps Right channel", FlapsFields.flap_ch_a.value),
+			wizard.summaryLine("Flaps Left channel", FlapsFields.flap_ch_b.value)
 		)
 	end
 
 	if wizardType ~= "wing" then
 		if TailFields.tail_type.value == 0 then
-			addRows(wizard.summaryLine("Höhenruder Kanal", TailFields.ch_a.value))
+			addRows(wizard.summaryLine("Elevator channel", TailFields.ch_a.value))
 		elseif TailFields.tail_type.value == 1 then
 			addRows(
-				wizard.summaryLine("Höhenruder Kanal", TailFields.ch_a.value),
-				wizard.summaryLine("Seitenruder Kanal", TailFields.ch_b.value)
+				wizard.summaryLine("Elevator channel", TailFields.ch_a.value),
+				wizard.summaryLine("Rudder channel", TailFields.ch_b.value)
 			)
 		elseif TailFields.tail_type.value == 2 then
 			addRows(
-				wizard.summaryLine("Höhenruder Rechts", TailFields.ch_a.value),
-				wizard.summaryLine("Seitenruder Kanal", TailFields.ch_b.value),
-				wizard.summaryLine("Höhenruder Links", TailFields.ch_c.value)
+				wizard.summaryLine("Elevator Right channel", TailFields.ch_a.value),
+				wizard.summaryLine("Rudder channel", TailFields.ch_b.value),
+				wizard.summaryLine("Elevator Left channel", TailFields.ch_c.value)
 			)
 		elseif TailFields.tail_type.value == 3 then
 			addRows(
-				wizard.summaryLine("V-Leitwerk Rechts", TailFields.ch_a.value),
-				wizard.summaryLine("V-Leitwerk Links", TailFields.ch_b.value)
+				wizard.summaryLine("V-Tail Right", TailFields.ch_a.value),
+				wizard.summaryLine("V-Tail Left", TailFields.ch_b.value)
 			)
 		end
 	end
@@ -1157,11 +1119,11 @@ local function runConfigSummary()
 		if GearFields.is_gear.value == 1 then
 			local switchName = GearFields.switch.avail_values[1 + GearFields.switch.value]
 			addRows(
-				wizard.summaryLine("Fahrwerk-Schalter", nil, switchName),
-				wizard.summaryLine("Fahrwerk-Kanal", GearFields.channel.value)
+				wizard.summaryLine("Gear Switch", nil, switchName),
+				wizard.summaryLine("Gear Channel", GearFields.channel.value)
 			)
 		else
-			addRows(wizard.summaryLine("Fahrwerk-Schalter", nil, "Kein"), wizard.summaryLine("Fahrwerk-Kanal", nil, "Kein"))
+			addRows(wizard.summaryLine("Gear Switch", nil, "None"), wizard.summaryLine("Gear Channel", nil, "None"))
 		end
 	end
 
@@ -1182,7 +1144,7 @@ local function runConfigSummary()
 
 	if MotorFields.is_arm.value == 1 then
 		local switchName = MotorFields.arm_switch.avail_values[1 + MotorFields.arm_switch.value]
-		addRows(wizard.summaryLine("Sicherheitsschalter", nil, switchName))
+		addRows(wizard.summaryLine("Arm switch", nil, switchName))
 	end
 
 	lvgl.clear()
@@ -1191,18 +1153,18 @@ local function runConfigSummary()
 		{
 			type = "label",
 			w = lvgl.PERCENT_SIZE + 100,
-			text = "Bitte prüfe die Konfiguration.",
+			text = "Please review the configuration.",
 		},
 		{
 			type = "label",
 			w = lvgl.PERCENT_SIZE + 100,
-			text = "Danach Weiter drücken zum Anwenden.",
+			text = "After review press next to apply the configuration.",
 		},
 	}
 
 	local page = wizard.page({
 		title = WIZARD_TITLE,
-		subtitle = "Zusammenfassung",
+		subtitle = "Model Summary",
 		hasPrevious = true,
 		hasNext = true,
 		nextFunc = function() selectPage(1) end,
@@ -1283,4 +1245,4 @@ return {
 	init = init,
 }
 
--- === ENDE DER DATEI ===
+-- === END OF FILE ===
