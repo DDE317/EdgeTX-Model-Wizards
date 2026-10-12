@@ -1,5 +1,10 @@
 # EdgeTX Model Wizards (DE / EN)
 
+### ⬇️ Download
+
+| 🇩🇪 Deutsch | 🇬🇧 English |
+|---|---|
+| [📦 Deutsche Version herunterladen](https://github.com/DDE317/EdgeTX-Model-Wizards/raw/main/downloads/EdgeTX-Wizard-DE-v1.0.zip) | [📦 Download English version](https://github.com/DDE317/EdgeTX-Model-Wizards/raw/main/downloads/EdgeTX-Wizard-EN-v1.0.zip) |
 
 Erweiterte Modell-Assistenten für EdgeTX 2.12+ – mit Modellname, Modellbild und deutschen Texten.
 
@@ -44,12 +49,27 @@ Diese Version ergänzt zwei wichtige Funktionen, die im Original fehlen: **Model
 
 ### Installation
 
-1. SD-Karte in den PC einlegen
-2. Den Inhalt des gewünschten Ordners (`Deutsch/` oder `Englisch/`) auf die SD-Karte kopieren
-3. Die Struktur `TEMPLATES/1.Wizard/` muss erhalten bleiben
-4. **Wichtig:** Falls bereits eine `fixed-wing.luac`, `heli.luac` oder `multi-rotor.luac` auf der SD-Karte liegt → **löschen** (sonst wird die alte kompilierte Version geladen)
-5. SD-Karte in den Sender
-6. Modell-Manager öffnen → „Neues Modell" → Wizard auswählen
+1. **Backup machen:**  
+   Kopiere den bestehenden Ordner `TEMPLATES/1.Wizard` von deiner SD-Karte auf den PC – z. B. als `1.Wizard_backup`.  
+   (Falls du deinen Original-Wizard später wiederherstellen willst.)
+
+2. **Alten Ordner löschen:**  
+   Lösche auf der SD-Karte den Ordner `TEMPLATES/1.Wizard`.
+
+3. **Download entpacken:**  
+   Lade die ZIP-Datei herunter (siehe Download-Button oben) und entpacke sie auf dem PC.
+
+4. **Neuen Ordner kopieren:**  
+   Kopiere den entpackten Ordner `1.Wizard` (aus dem Download) auf die SD-Karte nach `TEMPLATES/`.  
+   → Ergebnis: `TEMPLATES/1.Wizard` mit den erweiterten Dateien.
+
+5. **SD-Karte in den Sender stecken.**
+
+6. **Modell-Manager öffnen → „Neues Modell" → Wizard auswählen.**
+
+**⚠️ Wichtig:**
+- Dein Backup kannst du jederzeit wieder zurückkopieren, wenn du zum Original zurück willst.
+- Die neue Version überschreibt **nicht** deine bestehenden Modelle – nur den Wizard selbst.
 
 ### Voraussetzungen
 
@@ -72,6 +92,10 @@ Wolfgang Dirks ([DDE317](https://github.com/DDE317))
 ---
 
 ## 🇬🇧 English
+
+### ⬇️ Download
+
+[📦 Download English version](https://github.com/DDE317/EdgeTX-Model-Wizards/raw/main/downloads/EdgeTX-Wizard-EN-v1.0.zip)
 
 ### What is this?
 
@@ -98,13 +122,6 @@ This version adds two important features that are missing in the original: **mod
 | `4.Helicopter.lua` | Helicopter |
 | `5.Multirotor.lua` | Multirotor |
 
-### Languages
-
-| Language | Folder |
-|---|---|
-| German | `Deutsch/` |
-| English | `Englisch/` |
-
 ### Screenshots
 
 **Enter model name**
@@ -117,12 +134,27 @@ This version adds two important features that are missing in the original: **mod
 
 ### Installation
 
-1. Insert SD card into your PC
-2. Copy the contents of the desired folder (`Deutsch/` or `Englisch/`) to the SD card
-3. Keep the folder structure `TEMPLATES/1.Wizard/` intact
-4. **Important:** If a `fixed-wing.luac`, `heli.luac` or `multi-rotor.luac` already exists on the SD card → **delete it** (otherwise the old compiled version will be loaded)
-5. Insert SD card into your radio
-6. Open Model Manager → "New Model" → select wizard
+1. **Make a backup:**  
+   Copy the existing `TEMPLATES/1.Wizard` folder from your SD card to your PC – e.g. as `1.Wizard_backup`.  
+   (In case you want to restore the original wizard later.)
+
+2. **Delete old folder:**  
+   Delete the `TEMPLATES/1.Wizard` folder from your SD card.
+
+3. **Extract download:**  
+   Download the ZIP file (see download button above) and extract it on your PC.
+
+4. **Copy new folder:**  
+   Copy the extracted `1.Wizard` folder (from the download) to your SD card under `TEMPLATES/`.  
+   → Result: `TEMPLATES/1.Wizard` with the extended files.
+
+5. **Insert SD card into your radio.**
+
+6. **Open Model Manager → "New Model" → select wizard.**
+
+**⚠️ Important:**
+- Your backup can be restored at any time if you want to switch back to the original.
+- The new version does **not** overwrite your existing models – only the wizard itself.
 
 ### Requirements
 
