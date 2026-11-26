@@ -29,9 +29,17 @@ Anders als in der Original-Version, bei der die Texte fest im Code verankert sin
 *   ✨ **Detaillierte Expo-Einstellungen** – separate Seite für Quer-, Höhen- und Seitenruder (ohne Zwang zu Dual Rate).
 *   ✨ **Bugfixes** – einige kleinere Fehler der Original-Version behoben.
 
-### Screenshot
+### Screenshots
 
-![Modellname](01-modellname.png)
+*(Hier siehst du die vier wichtigsten neuen Funktionen im Überblick)*
+
+| Sprachauswahl | Modellname |
+| :---: | :---: |
+| ![Sprachauswahl](01-sprachauswahl.png) | ![Modellname](02-modellname.png) |
+
+| Modellbild | Detailliertes Expo |
+| :---: | :---: |
+| ![Modellbild](03-bildauswahl.png) | ![Expo](04-expo.png) |
 
 ### Enthaltene Assistenten
 
@@ -101,9 +109,17 @@ Unlike the original version, where texts are hardcoded, this wizard features **t
 *   ✨ **Detailed Expo settings** – separate page for aileron, elevator, and rudder (without mandatory dual rate).
 *   ✨ **Bug fixes** – some minor bugs from the original version fixed.
 
-### Screenshot
+### Screenshots
 
-![Model Name](01-modellname.png)
+*(Here are the four most important new features at a glance)*
+
+| Language Selection | Model Name |
+| :---: | :---: |
+| ![Language](01-sprachauswahl.png) | ![Model Name](02-modellname.png) |
+
+| Model Image | Detailed Expo |
+| :---: | :---: |
+| ![Image](03-bildauswahl.png) | ![Expo](04-expo.png) |
 
 ### Included Wizards
 
