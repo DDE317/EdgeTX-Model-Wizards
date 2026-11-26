@@ -31,8 +31,6 @@ Anders als in der Original-Version, bei der die Texte fest im Code verankert sin
 
 ### Screenshots
 
-*(Hier siehst du die vier wichtigsten neuen Funktionen im Überblick)*
-
 | Sprachauswahl | Modellname |
 | :---: | :---: |
 | ![Sprachauswahl](01-sprachauswahl.png) | ![Modellname](02-modellname.png) |
@@ -40,6 +38,8 @@ Anders als in der Original-Version, bei der die Texte fest im Code verankert sin
 | Modellbild | Detailliertes Expo |
 | :---: | :---: |
 | ![Modellbild](03-bildauswahl.png) | ![Expo](04-expo.png) |
+
+*(Hinweis: Die Bild-Dateinamen oben müssen exakt mit den Dateien in deinem Repository übereinstimmen.)*
 
 ### Enthaltene Assistenten
 
@@ -111,8 +111,6 @@ Unlike the original version, where texts are hardcoded, this wizard features **t
 
 ### Screenshots
 
-*(Here are the four most important new features at a glance)*
-
 | Language Selection | Model Name |
 | :---: | :---: |
 | ![Language](01-sprachauswahl.png) | ![Model Name](02-modellname.png) |
@@ -120,6 +118,8 @@ Unlike the original version, where texts are hardcoded, this wizard features **t
 | Model Image | Detailed Expo |
 | :---: | :---: |
 | ![Image](03-bildauswahl.png) | ![Expo](04-expo.png) |
+
+*(Note: The image filenames above must exactly match the files in your repository.)*
 
 ### Included Wizards
 
