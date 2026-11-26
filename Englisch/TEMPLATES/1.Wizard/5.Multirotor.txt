@@ -1,3 +1,0 @@
-Creates a simple basic multirotor model.
-
-All basic settings are configured automatically.

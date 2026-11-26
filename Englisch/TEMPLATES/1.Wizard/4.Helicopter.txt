@@ -1,3 +1,0 @@
-Creates a simple basic helicopter model.
-
-All basic settings are configured automatically.
