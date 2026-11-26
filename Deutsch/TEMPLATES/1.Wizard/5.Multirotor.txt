@@ -1,3 +1,0 @@
-Erstellt ein einfaches Multirotor-Grundmodell.
-
-Alle grundlegenden Einstellungen werden automatisch eingerichtet.

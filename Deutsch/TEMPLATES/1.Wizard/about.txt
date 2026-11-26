@@ -1,3 +1,0 @@
-Modell-Assistent (Offiziell)
-
-Erstellen eines neuen Modells mithilfe von Lua-Skripten und Vorlagen
