@@ -39,7 +39,7 @@ Anders als in der Original-Version, bei der die Texte fest im Code verankert sin
 
 | Modellbild | Detailliertes Expo |
 | :---: | :---: |
-| ![Modellbild](03-bildauswahl.png) | ![Expo](04-expo.png) |
+| ![Modellbild](03-modellimage.png) | ![Expo](04-expo.png) |
 
 ### Enthaltene Assistenten
 
