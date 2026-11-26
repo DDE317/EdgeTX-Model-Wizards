@@ -119,7 +119,7 @@ Unlike the original version, where texts are hardcoded, this wizard features **t
 
 | Model Image | Detailed Expo |
 | :---: | :---: |
-| ![Image](03-bildauswahl.png) | ![Expo](04-expo.png) |
+| ![Image](03-modellimage.png) | ![Expo](04-expo.png) |
 
 ### Included Wizards
 
